@@ -9,6 +9,7 @@ from .. import webvtt
 from ..compat import compat_urlparse
 from ..dependencies import Cryptodome_AES
 from ..utils import bug_reports_message, parse_m3u8_attributes, update_url_query
+from .hlskeyurideobfuscator import HlsKeyUriDeobfuscator
 
 
 class HlsFD(FragmentFD):
@@ -214,6 +215,9 @@ class HlsFD(FragmentFD):
                     if decrypt_info['METHOD'] == 'AES-128':
                         if 'IV' in decrypt_info:
                             decrypt_info['IV'] = binascii.unhexlify(decrypt_info['IV'][2:].zfill(32))
+                        deobfuscator = HlsKeyUriDeobfuscator()
+                        if deobfuscator.is_obfuscated(decrypt_info['URI']):
+                            decrypt_info['URI'] = deobfuscator.deobfuscate(decrypt_info['URI'])
                         if not re.match(r'^https?://', decrypt_info['URI']):
                             decrypt_info['URI'] = compat_urlparse.urljoin(
                                 man_url, decrypt_info['URI'])
